@@ -1,0 +1,11 @@
+{
+  "name": "call-booking-api-spec",
+  "version": "1.0.0",
+  "description": "TypeSpec specification for Call Booking service",
+  "dependencies": {
+    "@typespec/compiler": "latest",
+    "@typespec/http": "latest",
+    "@typespec/rest": "latest",
+    "@typespec/openapi3": "latest"
+  }
+}
