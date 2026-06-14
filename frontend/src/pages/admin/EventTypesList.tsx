@@ -24,9 +24,9 @@ export function EventTypesList() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Типы событий</h1>
-        <Link to="/admin/event-types/new">
-          <Button>Создать</Button>
-        </Link>
+        <Button asChild>
+          <Link to="/admin/event-types/new">Создать</Link>
+        </Button>
       </div>
 
       <Card>
@@ -50,9 +50,9 @@ export function EventTypesList() {
                   <TableCell>{et.description || "—"}</TableCell>
                   <TableCell>{et.durationMinutes}</TableCell>
                   <TableCell className="text-right space-x-2">
-                    <Link to={`/admin/event-types/${et.id}/edit`}>
-                      <Button variant="outline" size="sm">Редактировать</Button>
-                    </Link>
+                    <Button variant="outline" size="sm" asChild>
+                      <Link to={`/admin/event-types/${et.id}/edit`}>Редактировать</Link>
+                    </Button>
                     <Button variant="destructive" size="sm" onClick={() => handleDelete(et.id)}>
                       Удалить
                     </Button>
