@@ -66,19 +66,19 @@ export function AdminDashboard() {
           <CardContent className="space-y-2 pt-2">
             <Link 
               to="/admin/event-types" 
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-primary/5 transition-colors group"
+              className="flex items-center gap-3 p-3 rounded-lg bg-muted hover:bg-primary/5 transition-colors group"
             >
               <Calendar className="size-4 text-muted-foreground group-hover:text-primary transition-colors" />
               <span className="flex-1 font-medium">Типы событий</span>
-              <ArrowRight className="size-4 text-muted-foreground group-hover:text-primary transition-colors group-hover:translate-x-1" />
+              <ArrowRight className="size-4 text-muted-foreground group-hover:text-primary transition group-hover:translate-x-1" />
             </Link>
             <Link 
               to="/admin/bookings" 
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-primary/5 transition-colors group"
+              className="flex items-center gap-3 p-3 rounded-lg bg-muted hover:bg-primary/5 transition-colors group"
             >
               <List className="size-4 text-muted-foreground group-hover:text-primary transition-colors" />
               <span className="flex-1 font-medium">Бронирования</span>
-              <ArrowRight className="size-4 text-muted-foreground group-hover:text-primary transition-colors group-hover:translate-x-1" />
+              <ArrowRight className="size-4 text-muted-foreground group-hover:text-primary transition group-hover:translate-x-1" />
             </Link>
           </CardContent>
         </Card>

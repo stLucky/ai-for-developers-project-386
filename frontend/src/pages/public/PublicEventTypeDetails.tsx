@@ -208,8 +208,9 @@ export function PublicEventTypeDetails() {
                     {format(selectedDate, "EEEE, d MMMM", { locale: ru }).replace(/^./, str => str.toUpperCase())}
                   </h3>
                 </div>
-                <div className="flex flex-col gap-2 overflow-y-auto max-h-[400px] scrollbar-hide">
-                  {slotsPending ? (
+                <div className="overflow-hidden rounded-lg">
+                  <div className="flex flex-col gap-2 overflow-y-auto max-h-[400px] scrollbar-hide">
+                    {slotsPending ? (
                     <div className="flex flex-col items-center justify-center py-8 gap-2 text-muted-foreground text-sm">
                       <Loader2 className="size-5 animate-spin" />
                       <span>Загрузка слотов...</span>
@@ -219,7 +220,7 @@ export function PublicEventTypeDetails() {
                       <Button
                         key={slot.id}
                         variant="outline"
-                        className="justify-start w-full h-11 gap-2 rounded-lg border bg-background hover:bg-muted neumorphic-sm"
+                        className="justify-start w-full h-11 gap-2 rounded-lg border bg-background hover:bg-muted"
                         onClick={() => handleSlotSelect(slot.id)}
                       >
                         <Circle className="size-2 fill-green-500 text-green-500" />
@@ -233,6 +234,7 @@ export function PublicEventTypeDetails() {
                       Нет доступных слотов
                     </div>
                   )}
+                  </div>
                 </div>
               </div>
             </>

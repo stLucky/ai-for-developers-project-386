@@ -28,7 +28,7 @@
 
     /* Neumorphic shadows */
     --shadow-raised: 6px 6px 12px hsl(210 30% 85%), -6px -6px 12px hsl(0 0% 100%);
-    --shadow-inset: inset 3px 3px 6px hsl(210 30% 85%), inset -3px -3px 6px hsl(0 0% 100%);
+    --shadow-inset: inset 0 0 4px hsl(210 30% 85%);
     --shadow-raised-sm: 3px 3px 6px hsl(210 30% 88%), -3px -3px 6px hsl(0 0% 100%);
   }
 
@@ -54,7 +54,7 @@
     --ring: 217 91% 60%;
 
     --shadow-raised: 6px 6px 12px hsl(222 47% 5%), -6px -6px 12px hsl(222 47% 18%);
-    --shadow-inset: inset 3px 3px 6px hsl(222 47% 5%), inset -3px -3px 6px hsl(222 47% 18%);
+    --shadow-inset: inset 0 0 4px hsl(222 47% 18%);
     --shadow-raised-sm: 3px 3px 6px hsl(222 47% 5%), -3px -3px 6px hsl(222 47% 18%);
   }
 }
@@ -66,6 +66,45 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Global scrollbar styling — prevents layout shift + themed look */
+html {
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--primary) / 0.3) transparent;
+}
+
+html.dark {
+  scrollbar-color: hsl(var(--primary) / 0.4) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary) / 0.3);
+  border-radius: 3px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.5);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary) / 0.4);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.6);
 }
 
 /* Global background gradient + pattern */
