@@ -23,6 +23,18 @@ export function useEventTypes() {
   });
 }
 
+export function useEventType(id: string) {
+  return useQuery({
+    queryKey: ["eventType", id],
+    queryFn: async () => {
+      const { data, error } = await api.GET("/admin/event-types/{id}", { params: { path: { id } } });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!id,
+  });
+}
+
 export function useCreateEventType() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -173,6 +185,18 @@ export function usePublicBooking(id: string) {
     queryKey: ["publicBooking", id],
     queryFn: async () => {
       const { data, error } = await api.GET("/public/bookings/{id}", { params: { path: { id } } });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!id,
+  });
+}
+
+export function useSlot(id: string) {
+  return useQuery({
+    queryKey: ["slot", id],
+    queryFn: async () => {
+      const { data, error } = await api.GET("/public/slots/{id}", { params: { path: { id } } });
       if (error) throw error;
       return data;
     },

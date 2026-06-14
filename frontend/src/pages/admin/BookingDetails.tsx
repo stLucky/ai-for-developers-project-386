@@ -1,16 +1,18 @@
-import { useBooking, useCancelBooking } from "@/api/hooks";
+import { useBooking, useCancelBooking, useSlot, useEventType } from "@/api/hooks";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
-import { FileText, User, Mail, CheckCircle2, XCircle, Calendar, AlertTriangle, ArrowLeft } from "lucide-react";
+import { FileText, User, Mail, CheckCircle2, XCircle, Calendar, AlertTriangle, ArrowLeft, Clock, Tag } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export function BookingDetails() {
   const { id } = useParams<{ id: string }>();
   const { data: booking, isLoading } = useBooking(id || "");
+  const { data: slot } = useSlot(booking?.slotId || "");
+  const { data: eventType } = useEventType(slot?.eventTypeId || "");
   const cancelBooking = useCancelBooking();
 
   const handleCancel = async () => {
@@ -85,6 +87,26 @@ export function BookingDetails() {
                 {booking.status === "confirmed" ? "Подтверждено" : "Отменено"}
               </span>
             </div>
+            {eventType && (
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                <Tag className="size-4 text-muted-foreground" />
+                <div>
+                  <div className="text-xs text-muted-foreground">Тип события</div>
+                  <div className="font-medium">{eventType.name}</div>
+                </div>
+              </div>
+            )}
+            {slot && (
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+                <Clock className="size-4 text-muted-foreground" />
+                <div>
+                  <div className="text-xs text-muted-foreground">Дата и время</div>
+                  <div className="font-medium">
+                    {format(new Date(slot.startTime), "dd.MM.yyyy HH:mm", { locale: ru })} – {format(new Date(slot.endTime), "HH:mm", { locale: ru })}
+                  </div>
+                </div>
+              </div>
+            )}
             <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
               <Calendar className="size-4 text-muted-foreground" />
               <div>

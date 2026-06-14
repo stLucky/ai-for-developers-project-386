@@ -83,4 +83,38 @@ router.get("/bookings/:id", (req: Request, res: Response) => {
   res.json(booking);
 });
 
+router.get("/slots/:id", (req: Request, res: Response) => {
+  const slotId = req.params.id;
+  const underscoreIndex = slotId.indexOf("_");
+  if (underscoreIndex === -1) {
+    return res.status(404).json({ code: "NOT_FOUND", message: "Slot not found" });
+  }
+
+  const eventTypeId = slotId.substring(0, underscoreIndex);
+  const startTimeStr = slotId.substring(underscoreIndex + 1);
+  const eventType = store.eventTypes.get(eventTypeId);
+
+  if (!eventType) {
+    return res.status(404).json({ code: "NOT_FOUND", message: "Slot not found" });
+  }
+
+  const startTime = new Date(startTimeStr);
+  if (isNaN(startTime.getTime())) {
+    return res.status(404).json({ code: "NOT_FOUND", message: "Slot not found" });
+  }
+
+  const endTime = new Date(startTime.getTime() + eventType.durationMinutes * 60 * 1000);
+  const isBooked = Array.from(store.bookings.values()).some(
+    (b) => b.slotId === slotId && b.status === "confirmed"
+  );
+
+  res.json({
+    id: slotId,
+    eventTypeId: eventType.id,
+    startTime: startTime.toISOString(),
+    endTime: endTime.toISOString(),
+    isAvailable: !isBooked,
+  });
+});
+
 export default router;

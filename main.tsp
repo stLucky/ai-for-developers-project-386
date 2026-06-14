@@ -531,4 +531,9 @@ interface Public {
   @get
   @route("/bookings/{id}")
   getPublicBooking(@path id: string): Booking | NotFoundError;
+
+  /** Получить слот по id */
+  @get
+  @route("/slots/{id}")
+  getSlot(@path id: string): Slot | NotFoundError;
 }
