@@ -1,15 +1,17 @@
-import { usePublicEventType, useSlots, useCreateBooking } from "@/api/hooks";
+import { usePublicEventType, useSlots, useCreateBooking, usePublicOwner } from "@/api/hooks";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Calendar } from "@/components/ui/calendar";
 import { useParams, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { format, addDays, startOfDay, endOfDay } from "date-fns";
+import { format, addDays, startOfDay, endOfDay, startOfToday } from "date-fns";
+import { ru } from "date-fns/locale";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
+import { Clock, ArrowLeft, Circle, Loader2, User, Mail, FileText, CalendarDays } from "lucide-react";
 
 const schema = z.object({
   guestName: z.string().min(1, "Обязательное поле"),
@@ -18,22 +20,65 @@ const schema = z.object({
 });
 
 type FormData = z.infer<typeof schema>;
+type Step = "slots" | "form";
+
+function getInitials(name: string): string {
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+}
 
 export function PublicEventTypeDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: eventType } = usePublicEventType(id || "");
+  const { data: owner } = usePublicOwner();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
+  const [step, setStep] = useState<Step>("slots");
+  const [avatarError, setAvatarError] = useState(false);
   const createBooking = useCreateBooking();
 
   const from = format(startOfDay(selectedDate), "yyyy-MM-dd'T'00:00:00'Z'");
   const to = format(endOfDay(selectedDate), "yyyy-MM-dd'T'23:59:59'Z'");
-  const { data: slots } = useSlots(id || "", from, to);
+  const { data: slots, isPending: slotsPending } = useSlots(id || "", from, to);
 
-  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>({
     resolver: zodResolver(schema),
   });
+
+  const isDateDisabled = (date: Date) => {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    const today = startOfToday();
+    const max = addDays(today, 13);
+    if (d < today) return true;
+    if (d > max) return true;
+    return false;
+  };
+
+  const handleDateSelect = (date: Date | undefined) => {
+    if (!date) return;
+    setSelectedDate(date);
+    setSelectedSlotId(null);
+  };
+
+  const handleSlotSelect = (slotId: string) => {
+    setSelectedSlotId(slotId);
+    setStep("form");
+  };
+
+  const handleBack = () => {
+    setStep("slots");
+    setSelectedSlotId(null);
+  };
 
   const onSubmit = async (data: FormData) => {
     if (!selectedSlotId) {
@@ -53,93 +98,222 @@ export function PublicEventTypeDetails() {
   };
 
   const availableSlots = slots?.filter((s) => s.isAvailable) || [];
-  const dates = Array.from({ length: 14 }, (_, i) => addDays(new Date(), i));
 
-  if (!eventType) return <div>Загрузка...</div>;
+  if (!eventType || !owner)
+    return (
+      <div className="flex justify-center py-12">
+        <div className="animate-pulse text-muted-foreground">Загрузка...</div>
+      </div>
+    );
+
+  const selectedSlot = availableSlots.find((s) => s.id === selectedSlotId);
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold">{eventType.name}</h1>
-      {eventType.description && <p className="text-muted-foreground">{eventType.description}</p>}
-      <p className="text-sm">Длительность: {eventType.durationMinutes} мин</p>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Выберите дату</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-2 overflow-x-auto pb-2">
-            {dates.map((date) => (
-              <Button
-                key={date.toISOString()}
-                variant={selectedDate.toDateString() === date.toDateString() ? "default" : "outline"}
-                onClick={() => setSelectedDate(date)}
-                className="min-w-[100px]"
-              >
-                <div className="text-center">
-                  <div className="text-xs">{format(date, "EEE")}</div>
-                  <div className="text-lg font-bold">{format(date, "d")}</div>
-                  <div className="text-xs">{format(date, "MMM")}</div>
-                </div>
-              </Button>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {availableSlots.length > 0 ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Доступные слоты</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {availableSlots.map((slot) => (
-                <Button
-                  key={slot.id}
-                  variant={selectedSlotId === slot.id ? "default" : "outline"}
-                  onClick={() => setSelectedSlotId(slot.id)}
-                >
-                  {format(new Date(slot.startTime), "HH:mm")}
-                </Button>
-              ))}
+    <div className="flex justify-center animate-fade-in-up">
+      <div className="bg-background rounded-2xl shadow-lg border overflow-hidden w-full max-w-[980px] neumorphic-sm">
+        <div className="grid grid-cols-1 md:grid-cols-[300px_1fr_280px] min-h-[500px]">
+          {/* Left sidebar */}
+          <div className="bg-muted/30 p-6 border-b md:border-b-0 md:border-r flex flex-col gap-6">
+            {/* Avatar */}
+            <div className="flex items-center gap-3">
+              <div className="relative size-12 rounded-full overflow-hidden bg-secondary flex items-center justify-center shrink-0 border neumorphic-sm">
+                {owner.avatar && !avatarError ? (
+                  <img
+                    src={owner.avatar}
+                    alt={owner.name}
+                    className="size-full object-cover"
+                    onError={() => setAvatarError(true)}
+                  />
+                ) : (
+                  <span className="text-sm font-medium text-muted-foreground">
+                    {getInitials(owner.name)}
+                  </span>
+                )}
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm font-medium text-foreground">{owner.name}</span>
+                <span className="text-xs text-muted-foreground">Организатор</span>
+              </div>
             </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card>
-          <CardContent className="py-8 text-center text-muted-foreground">
-            Нет доступных слотов на выбранную дату
-          </CardContent>
-        </Card>
-      )}
 
-      {selectedSlotId && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Оформление бронирования</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="guestName">Имя</Label>
-                <Input id="guestName" {...register("guestName")} />
-                {errors.guestName && <p className="text-sm text-destructive">{errors.guestName.message}</p>}
+            <div className="h-px bg-border" />
+
+            {/* Event info */}
+            <div className="flex flex-col gap-3">
+              <h1 className="text-xl font-semibold text-foreground">
+                {eventType.name}
+              </h1>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Clock className="size-4" />
+                <span>{eventType.durationMinutes} мин</span>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="guestEmail">Email</Label>
-                <Input id="guestEmail" type="email" {...register("guestEmail")} />
-                {errors.guestEmail && <p className="text-sm text-destructive">{errors.guestEmail.message}</p>}
+              {eventType.description && (
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {eventType.description}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Center + Right content */}
+          {step === "slots" ? (
+            <>
+              {/* Center: Calendar */}
+              <div className="p-6 flex flex-col gap-4 border-b md:border-b-0 md:border-r">
+                <div className="flex items-center gap-2 mb-2">
+                  <CalendarDays className="size-5 text-primary" />
+                  <h3 className="font-medium">Выберите дату</h3>
+                </div>
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={handleDateSelect}
+                  disabled={isDateDisabled}
+                  autoFocus
+                  showOutsideDays={true}
+                  locale={ru}
+                  className="mx-auto"
+                  classNames={{
+                    root: "w-full",
+                    month: "w-full",
+                    month_caption: "flex items-center justify-center h-10 text-base font-medium mb-6",
+                    nav: "absolute inset-x-0 top-0 flex w-full items-center justify-between px-2 h-10",
+                    button_previous: "flex items-center justify-center h-8 w-8 rounded-md border bg-background hover:bg-muted neumorphic-sm",
+                    button_next: "flex items-center justify-center h-8 w-8 rounded-md border bg-background hover:bg-muted neumorphic-sm",
+                    month_grid: "w-full border-collapse",
+                    weekdays: "flex gap-1 mb-2 w-full",
+                    weekday: "flex-1 text-center text-xs text-muted-foreground font-normal",
+                    week: "flex w-full gap-1 mb-1",
+                    day: "flex items-center justify-center relative aspect-square h-full w-full p-0 text-center",
+                    day_button: "w-full h-full rounded-lg font-normal text-sm",
+                    selected: "rounded-lg bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground",
+                    today: "rounded-lg bg-accent text-accent-foreground",
+                    outside: "text-muted-foreground/40",
+                    disabled: "text-muted-foreground/40",
+                    hidden: "invisible",
+                  }}
+                  formatters={{
+                    formatCaption: (month, options) => {
+                      const formatted = format(month, "LLLL yyyy", { locale: options?.locale || ru });
+                      return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+                    },
+                  }}
+                />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="notes">Заметки</Label>
-                <Input id="notes" {...register("notes")} />
+
+              {/* Right: Slots */}
+              <div className="p-6 flex flex-col gap-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-base font-medium">
+                    {format(selectedDate, "EEEE, d MMMM", { locale: ru }).replace(/^./, str => str.toUpperCase())}
+                  </h3>
+                </div>
+                <div className="overflow-hidden rounded-lg">
+                  <div className="flex flex-col gap-2 overflow-y-auto max-h-[400px] scrollbar-hide">
+                    {slotsPending ? (
+                    <div className="flex flex-col items-center justify-center py-8 gap-2 text-muted-foreground text-sm">
+                      <Loader2 className="size-5 animate-spin" />
+                      <span>Загрузка слотов...</span>
+                    </div>
+                  ) : availableSlots.length > 0 ? (
+                    availableSlots.map((slot) => (
+                      <Button
+                        key={slot.id}
+                        variant="outline"
+                        className="justify-start w-full h-11 gap-2 rounded-lg border bg-background hover:bg-muted"
+                        onClick={() => handleSlotSelect(slot.id)}
+                      >
+                        <Circle className="size-2 fill-green-500 text-green-500" />
+                        <span className="text-sm font-medium">
+                          {format(new Date(slot.startTime), "HH:mm")}
+                        </span>
+                      </Button>
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground text-sm">
+                      Нет доступных слотов
+                    </div>
+                  )}
+                  </div>
+                </div>
               </div>
-              <Button type="submit">Забронировать</Button>
-            </form>
-          </CardContent>
-        </Card>
-      )}
+            </>
+          ) : (
+            /* Form replaces center + right */
+            <div className="md:col-span-2 p-6 flex flex-col gap-4 animate-slide-in-right">
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleBack}
+                  className="size-8 rounded-full"
+                >
+                  <ArrowLeft className="size-4" />
+                </Button>
+                <div>
+                  <h2 className="text-lg font-medium text-foreground">
+                    Оформление бронирования
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedSlot
+                      ? `${format(selectedDate, "EEEE, d MMMM", { locale: ru })} в ${format(
+                          new Date(selectedSlot.startTime),
+                          "HH:mm"
+                        )}`
+                      : ""}
+                  </p>
+                </div>
+              </div>
+              <form
+                onSubmit={handleSubmit(onSubmit)}
+                className="flex flex-col gap-4 max-w-md"
+              >
+                <div className="space-y-2">
+                  <Label htmlFor="guestName" className="flex items-center gap-2">
+                    <User className="size-4 text-muted-foreground" />
+                    Имя
+                  </Label>
+                  <Input id="guestName" {...register("guestName")} className="neumorphic-inset border-0" placeholder="Введите ваше имя" />
+                  {errors.guestName && (
+                    <p className="text-sm text-destructive">
+                      {errors.guestName.message}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="guestEmail" className="flex items-center gap-2">
+                    <Mail className="size-4 text-muted-foreground" />
+                    Email
+                  </Label>
+                  <Input
+                    id="guestEmail"
+                    type="email"
+                    {...register("guestEmail")}
+                    className="neumorphic-inset border-0"
+                    placeholder="email@example.com"
+                  />
+                  {errors.guestEmail && (
+                    <p className="text-sm text-destructive">
+                      {errors.guestEmail.message}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="notes" className="flex items-center gap-2">
+                    <FileText className="size-4 text-muted-foreground" />
+                    Заметки
+                  </Label>
+                  <Input id="notes" {...register("notes")} className="neumorphic-inset border-0" placeholder="Дополнительная информация" />
+                </div>
+                <Button type="submit" className="w-full neumorphic-sm gap-2">
+                  <CalendarDays className="size-4" />
+                  Забронировать
+                </Button>
+              </form>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
