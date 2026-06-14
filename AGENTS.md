@@ -4,6 +4,7 @@
 
 - Root: **TypeSpec API contract** (`main.tsp`) + shared tooling.
 - `frontend/`: **React 19 + Vite** app consuming the API.
+- `backend/`: **Express + TypeScript** API server.
 - `tsp-output/`: **Generated** — do not edit directly. Recompile from `main.tsp`.
 
 ## Critical Commands
@@ -23,6 +24,14 @@ npm run type-check   # tsc --noEmit (type check only)
 npm run api:generate # openapi-typescript → src/api/generated.ts
 ```
 
+### Backend (run from root)
+```bash
+npm run backend:install  # npm install in backend/
+npm run backend:dev      # nodemon + tsx (port 3000)
+npm run backend:build    # tsc
+npm run backend:start    # node dist/index.js (port 3000)
+```
+
 ### Mock API (run from root)
 ```bash
 npm run prism        # Stoplight Prism on port 4010
@@ -33,6 +42,9 @@ npm run prism        # Stoplight Prism on port 4010
 npm run frontend:dev
 npm run frontend:build
 npm run frontend:install
+npm run backend:dev
+npm run backend:build
+npm run backend:start
 npm run api:generate # runs frontend's api:generate
 ```
 
@@ -46,7 +58,8 @@ npm run api:generate # runs frontend's api:generate
   - `/public/*` — public layout
   - `/` — redirects to `/public`
 - **Path aliases**: `@/` → `src/` (Vite + TypeScript both configured).
-- **Dev proxy**: Vite proxies `/api` → `http://localhost:4010` (Prism mock).
+- **Dev proxy**: Vite proxies `/api` → `http://localhost:3000` (backend) by default.
+  - Override via `VITE_API_TARGET` env variable (e.g., `VITE_API_TARGET=http://localhost:4010` for Prism mock).
   - The `api` client uses `baseUrl: "/api"`.
 
 ## Codegen Workflow

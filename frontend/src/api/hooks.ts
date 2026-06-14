@@ -96,6 +96,20 @@ export function useBookings(filters?: { eventTypeId?: string; status?: "confirme
   });
 }
 
+export function useBooking(id: string) {
+  return useQuery({
+    queryKey: ["booking", id],
+    queryFn: async () => {
+      const { data, error } = await api.GET("/admin/bookings/{id}", {
+        params: { path: { id } },
+      });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!id,
+  });
+}
+
 export function useCreateBooking() {
   return useMutation({
     mutationFn: async (body: { slotId: string; guestName: string; guestEmail: string; notes?: string }) => {

@@ -1,4 +1,4 @@
-import { useBookings, useCancelBooking } from "@/api/hooks";
+import { useBooking, useCancelBooking } from "@/api/hooks";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useParams } from "react-router-dom";
@@ -10,9 +10,8 @@ import { Link } from "react-router-dom";
 
 export function BookingDetails() {
   const { id } = useParams<{ id: string }>();
-  const { data: bookings } = useBookings();
+  const { data: booking, isLoading } = useBooking(id || "");
   const cancelBooking = useCancelBooking();
-  const booking = bookings?.find((b) => b.id === id);
 
   const handleCancel = async () => {
     if (!id) return;
@@ -24,7 +23,7 @@ export function BookingDetails() {
     }
   };
 
-  if (!booking) return (
+  if (isLoading || !booking) return (
     <div className="flex items-center justify-center py-12">
       <div className="animate-pulse text-muted-foreground">Загрузка...</div>
     </div>
