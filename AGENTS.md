@@ -19,6 +19,7 @@ Output: `tsp-output/@typespec/openapi3/openapi.yaml`
 npm run dev          # Vite dev server (port 5173)
 npm run build        # tsc + vite build
 npm run lint         # eslint
+npm run type-check   # tsc --noEmit (type check only)
 npm run api:generate # openapi-typescript → src/api/generated.ts
 ```
 

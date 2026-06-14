@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "type-check": "tsc -b --noEmit",
     "api:generate": "npx openapi-typescript ../tsp-output/@typespec/openapi3/openapi.yaml -o ./src/api/generated.ts"
   },
   "dependencies": {
