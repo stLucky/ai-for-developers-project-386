@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
+import { Calendar, Plus, Pencil, Trash2 } from "lucide-react";
 
 export function EventTypesList() {
   const { data: eventTypes, isLoading } = useEventTypes();
@@ -18,25 +19,40 @@ export function EventTypesList() {
     }
   };
 
-  if (isLoading) return <div>Загрузка...</div>;
+  if (isLoading) return (
+    <div className="flex items-center justify-center py-12">
+      <div className="animate-pulse text-muted-foreground">Загрузка...</div>
+    </div>
+  );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in-up">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Типы событий</h1>
-        <Button asChild>
-          <Link to="/admin/event-types/new">Создать</Link>
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-primary/10">
+            <Calendar className="size-6 text-primary" />
+          </div>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
+            Типы событий
+          </h1>
+        </div>
+        <Button asChild className="neumorphic-sm gap-2">
+          <Link to="/admin/event-types/new">
+            <Plus className="size-4" />
+            Создать
+          </Link>
         </Button>
       </div>
 
-      <Card>
-        <CardHeader>
+      <Card className="border-0 neumorphic-sm overflow-hidden">
+        <CardHeader className="flex flex-row items-center gap-3 pb-4">
+          <Calendar className="size-5 text-primary" />
           <CardTitle>Список</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-0">
           <Table>
             <TableHeader>
-              <TableRow>
+              <TableRow className="hover:bg-transparent">
                 <TableHead>Название</TableHead>
                 <TableHead>Описание</TableHead>
                 <TableHead>Длительность (мин)</TableHead>
@@ -44,16 +60,24 @@ export function EventTypesList() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {eventTypes?.map((et) => (
-                <TableRow key={et.id}>
-                  <TableCell>{et.name}</TableCell>
-                  <TableCell>{et.description || "—"}</TableCell>
+              {eventTypes?.map((et, index) => (
+                <TableRow 
+                  key={et.id} 
+                  className="table-row-hover"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  <TableCell className="font-medium">{et.name}</TableCell>
+                  <TableCell className="text-muted-foreground">{et.description || "—"}</TableCell>
                   <TableCell>{et.durationMinutes}</TableCell>
                   <TableCell className="text-right space-x-2">
-                    <Button variant="outline" size="sm" asChild>
-                      <Link to={`/admin/event-types/${et.id}/edit`}>Редактировать</Link>
+                    <Button variant="outline" size="sm" asChild className="neumorphic-sm border-0 hover:bg-primary/10 hover:text-primary gap-1">
+                      <Link to={`/admin/event-types/${et.id}/edit`}>
+                        <Pencil className="size-3" />
+                        Редактировать
+                      </Link>
                     </Button>
-                    <Button variant="destructive" size="sm" onClick={() => handleDelete(et.id)}>
+                    <Button variant="destructive" size="sm" onClick={() => handleDelete(et.id)} className="neumorphic-sm gap-1">
+                      <Trash2 className="size-3" />
                       Удалить
                     </Button>
                   </TableCell>

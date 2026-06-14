@@ -47,8 +47,18 @@ export default {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      boxShadow: {
+        'neumorphic': 'var(--shadow-raised)',
+        'neumorphic-inset': 'var(--shadow-inset)',
+        'neumorphic-sm': 'var(--shadow-raised-sm)',
+      },
+      animation: {
+        'fade-in': 'fadeIn 0.5s ease-out forwards',
+        'fade-in-up': 'fadeInUp 0.6s ease-out forwards',
+        'slide-in-right': 'slideInRight 0.4s ease-out forwards',
+        'scale-in': 'scaleIn 0.3s ease-out forwards',
+      },
     },
   },
   plugins: [],
 }
-

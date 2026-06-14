@@ -11,7 +11,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Clock, ArrowLeft, Circle, Loader2 } from "lucide-react";
+import { Clock, ArrowLeft, Circle, Loader2, User, Mail, FileText, CalendarDays } from "lucide-react";
 
 const schema = z.object({
   guestName: z.string().min(1, "Обязательное поле"),
@@ -109,14 +109,14 @@ export function PublicEventTypeDetails() {
   const selectedSlot = availableSlots.find((s) => s.id === selectedSlotId);
 
   return (
-    <div className="flex justify-center">
-      <div className="bg-background rounded-xl shadow-lg border overflow-hidden w-full max-w-[980px]">
+    <div className="flex justify-center animate-fade-in-up">
+      <div className="bg-background rounded-2xl shadow-lg border overflow-hidden w-full max-w-[980px] neumorphic-sm">
         <div className="grid grid-cols-1 md:grid-cols-[300px_1fr_280px] min-h-[500px]">
           {/* Left sidebar */}
           <div className="bg-muted/30 p-6 border-b md:border-b-0 md:border-r flex flex-col gap-6">
             {/* Avatar */}
             <div className="flex items-center gap-3">
-              <div className="relative size-12 rounded-full overflow-hidden bg-secondary flex items-center justify-center shrink-0 border">
+              <div className="relative size-12 rounded-full overflow-hidden bg-secondary flex items-center justify-center shrink-0 border neumorphic-sm">
                 {owner.avatar && !avatarError ? (
                   <img
                     src={owner.avatar}
@@ -160,6 +160,10 @@ export function PublicEventTypeDetails() {
             <>
               {/* Center: Calendar */}
               <div className="p-6 flex flex-col gap-4 border-b md:border-b-0 md:border-r">
+                <div className="flex items-center gap-2 mb-2">
+                  <CalendarDays className="size-5 text-primary" />
+                  <h3 className="font-medium">Выберите дату</h3>
+                </div>
                 <Calendar
                   mode="single"
                   selected={selectedDate}
@@ -174,16 +178,16 @@ export function PublicEventTypeDetails() {
                     month: "w-full",
                     month_caption: "flex items-center justify-center h-10 text-base font-medium mb-6",
                     nav: "absolute inset-x-0 top-0 flex w-full items-center justify-between px-2 h-10",
-                    button_previous: "flex items-center justify-center h-8 w-8 rounded-md border bg-background hover:bg-muted",
-                    button_next: "flex items-center justify-center h-8 w-8 rounded-md border bg-background hover:bg-muted",
+                    button_previous: "flex items-center justify-center h-8 w-8 rounded-md border bg-background hover:bg-muted neumorphic-sm",
+                    button_next: "flex items-center justify-center h-8 w-8 rounded-md border bg-background hover:bg-muted neumorphic-sm",
                     month_grid: "w-full border-collapse",
                     weekdays: "flex gap-1 mb-2 w-full",
                     weekday: "flex-1 text-center text-xs text-muted-foreground font-normal",
                     week: "flex w-full gap-1 mb-1",
                     day: "flex items-center justify-center relative aspect-square h-full w-full p-0 text-center",
                     day_button: "w-full h-full rounded-lg font-normal text-sm",
-                    selected: "rounded-lg",
-                    today: "rounded-lg",
+                    selected: "rounded-lg bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground",
+                    today: "rounded-lg bg-accent text-accent-foreground",
                     outside: "text-muted-foreground/40",
                     disabled: "text-muted-foreground/40",
                     hidden: "invisible",
@@ -215,7 +219,7 @@ export function PublicEventTypeDetails() {
                       <Button
                         key={slot.id}
                         variant="outline"
-                        className="justify-start w-full h-11 gap-2 rounded-lg border bg-background hover:bg-muted"
+                        className="justify-start w-full h-11 gap-2 rounded-lg border bg-background hover:bg-muted neumorphic-sm"
                         onClick={() => handleSlotSelect(slot.id)}
                       >
                         <Circle className="size-2 fill-green-500 text-green-500" />
@@ -234,13 +238,13 @@ export function PublicEventTypeDetails() {
             </>
           ) : (
             /* Form replaces center + right */
-            <div className="md:col-span-2 p-6 flex flex-col gap-4">
+            <div className="md:col-span-2 p-6 flex flex-col gap-4 animate-slide-in-right">
               <div className="flex items-center gap-2">
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={handleBack}
-                  className="size-8"
+                  className="size-8 rounded-full"
                 >
                   <ArrowLeft className="size-4" />
                 </Button>
@@ -263,8 +267,11 @@ export function PublicEventTypeDetails() {
                 className="flex flex-col gap-4 max-w-md"
               >
                 <div className="space-y-2">
-                  <Label htmlFor="guestName">Имя</Label>
-                  <Input id="guestName" {...register("guestName")} />
+                  <Label htmlFor="guestName" className="flex items-center gap-2">
+                    <User className="size-4 text-muted-foreground" />
+                    Имя
+                  </Label>
+                  <Input id="guestName" {...register("guestName")} className="neumorphic-inset border-0" placeholder="Введите ваше имя" />
                   {errors.guestName && (
                     <p className="text-sm text-destructive">
                       {errors.guestName.message}
@@ -272,11 +279,16 @@ export function PublicEventTypeDetails() {
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="guestEmail">Email</Label>
+                  <Label htmlFor="guestEmail" className="flex items-center gap-2">
+                    <Mail className="size-4 text-muted-foreground" />
+                    Email
+                  </Label>
                   <Input
                     id="guestEmail"
                     type="email"
                     {...register("guestEmail")}
+                    className="neumorphic-inset border-0"
+                    placeholder="email@example.com"
                   />
                   {errors.guestEmail && (
                     <p className="text-sm text-destructive">
@@ -285,10 +297,14 @@ export function PublicEventTypeDetails() {
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="notes">Заметки</Label>
-                  <Input id="notes" {...register("notes")} />
+                  <Label htmlFor="notes" className="flex items-center gap-2">
+                    <FileText className="size-4 text-muted-foreground" />
+                    Заметки
+                  </Label>
+                  <Input id="notes" {...register("notes")} className="neumorphic-inset border-0" placeholder="Дополнительная информация" />
                 </div>
-                <Button type="submit" className="w-full">
+                <Button type="submit" className="w-full neumorphic-sm gap-2">
+                  <CalendarDays className="size-4" />
                   Забронировать
                 </Button>
               </form>
