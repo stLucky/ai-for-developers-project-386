@@ -24,23 +24,23 @@ export function BookingsList() {
       <h1 className="text-3xl font-bold">Бронирования</h1>
 
       <div className="flex gap-4">
-        <Select value={eventTypeId} onValueChange={(v) => setEventTypeId(v)}>
+        <Select value={eventTypeId} onValueChange={(v) => setEventTypeId(v === "all" ? "" : v)}>
           <SelectTrigger className="w-[220px]">
             <SelectValue placeholder="Все типы событий" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Все типы событий</SelectItem>
+            <SelectItem value="all">Все типы событий</SelectItem>
             {eventTypes?.map((et) => (
               <SelectItem key={et.id} value={et.id}>{et.name}</SelectItem>
             ))}
           </SelectContent>
         </Select>
-        <Select value={status} onValueChange={(v) => setStatus(v as "" | "confirmed" | "cancelled")}>
+        <Select value={status} onValueChange={(v) => setStatus(v === "all" ? "" : (v as "confirmed" | "cancelled"))}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Все статусы" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Все статусы</SelectItem>
+            <SelectItem value="all">Все статусы</SelectItem>
             <SelectItem value="confirmed">Подтверждено</SelectItem>
             <SelectItem value="cancelled">Отменено</SelectItem>
           </SelectContent>

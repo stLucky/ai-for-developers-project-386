@@ -11,7 +11,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Clock, ArrowLeft } from "lucide-react";
+import { Clock, ArrowLeft, Circle, Loader2 } from "lucide-react";
 
 const schema = z.object({
   guestName: z.string().min(1, "Обязательное поле"),
@@ -20,7 +20,7 @@ const schema = z.object({
 });
 
 type FormData = z.infer<typeof schema>;
-type Step = "date" | "time" | "form";
+type Step = "slots" | "form";
 
 function getInitials(name: string): string {
   return name
@@ -38,13 +38,13 @@ export function PublicEventTypeDetails() {
   const { data: owner } = usePublicOwner();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
-  const [step, setStep] = useState<Step>("date");
+  const [step, setStep] = useState<Step>("slots");
   const [avatarError, setAvatarError] = useState(false);
   const createBooking = useCreateBooking();
 
   const from = format(startOfDay(selectedDate), "yyyy-MM-dd'T'00:00:00'Z'");
   const to = format(endOfDay(selectedDate), "yyyy-MM-dd'T'23:59:59'Z'");
-  const { data: slots } = useSlots(id || "", from, to);
+  const { data: slots, isPending: slotsPending } = useSlots(id || "", from, to);
 
   const {
     register,
@@ -68,7 +68,6 @@ export function PublicEventTypeDetails() {
     if (!date) return;
     setSelectedDate(date);
     setSelectedSlotId(null);
-    setStep("time");
   };
 
   const handleSlotSelect = (slotId: string) => {
@@ -77,13 +76,8 @@ export function PublicEventTypeDetails() {
   };
 
   const handleBack = () => {
-    if (step === "form") {
-      setStep("time");
-      setSelectedSlotId(null);
-    } else if (step === "time") {
-      setStep("date");
-      setSelectedSlotId(null);
-    }
+    setStep("slots");
+    setSelectedSlotId(null);
   };
 
   const onSubmit = async (data: FormData) => {
@@ -116,8 +110,8 @@ export function PublicEventTypeDetails() {
 
   return (
     <div className="flex justify-center">
-      <div className="bg-background rounded-xl shadow-lg border overflow-hidden w-full max-w-[900px]">
-        <div className="grid grid-cols-1 md:grid-cols-[300px_1fr]">
+      <div className="bg-background rounded-xl shadow-lg border overflow-hidden w-full max-w-[980px]">
+        <div className="grid grid-cols-1 md:grid-cols-[300px_1fr_280px] min-h-[500px]">
           {/* Left sidebar */}
           <div className="bg-muted/30 p-6 border-b md:border-b-0 md:border-r flex flex-col gap-6">
             {/* Avatar */}
@@ -161,138 +155,145 @@ export function PublicEventTypeDetails() {
             </div>
           </div>
 
-          {/* Right content */}
-          <div className="p-6 flex flex-col gap-6">
-            {/* Step 1: Date */}
-            {step === "date" && (
-              <div className="flex flex-col gap-4">
-                <h2 className="text-lg font-medium text-foreground">
-                  Выберите дату
-                </h2>
+          {/* Center + Right content */}
+          {step === "slots" ? (
+            <>
+              {/* Center: Calendar */}
+              <div className="p-6 flex flex-col gap-4 border-b md:border-b-0 md:border-r">
                 <Calendar
                   mode="single"
                   selected={selectedDate}
                   onSelect={handleDateSelect}
                   disabled={isDateDisabled}
                   autoFocus
+                  showOutsideDays={true}
+                  locale={ru}
                   className="mx-auto"
+                  classNames={{
+                    root: "w-full",
+                    month: "w-full",
+                    month_caption: "flex items-center justify-center h-10 text-base font-medium mb-6",
+                    nav: "absolute inset-x-0 top-0 flex w-full items-center justify-between px-2 h-10",
+                    button_previous: "flex items-center justify-center h-8 w-8 rounded-md border bg-background hover:bg-muted",
+                    button_next: "flex items-center justify-center h-8 w-8 rounded-md border bg-background hover:bg-muted",
+                    month_grid: "w-full border-collapse",
+                    weekdays: "flex gap-1 mb-2 w-full",
+                    weekday: "flex-1 text-center text-xs text-muted-foreground font-normal",
+                    week: "flex w-full gap-1 mb-1",
+                    day: "flex items-center justify-center relative aspect-square h-full w-full p-0 text-center",
+                    day_button: "w-full h-full rounded-lg font-normal text-sm",
+                    selected: "rounded-lg",
+                    today: "rounded-lg",
+                    outside: "text-muted-foreground/40",
+                    disabled: "text-muted-foreground/40",
+                    hidden: "invisible",
+                  }}
+                  formatters={{
+                    formatCaption: (month, options) => {
+                      const formatted = format(month, "LLLL yyyy", { locale: options?.locale || ru });
+                      return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+                    },
+                  }}
                 />
               </div>
-            )}
 
-            {/* Step 2: Time */}
-            {step === "time" && (
-              <div className="flex flex-col gap-4">
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={handleBack}
-                    className="size-8"
-                  >
-                    <ArrowLeft className="size-4" />
-                  </Button>
-                  <div>
-                    <h2 className="text-lg font-medium text-foreground">
-                      Выберите время
-                    </h2>
-                    <p className="text-sm text-muted-foreground">
-                      {format(selectedDate, "EEEE, d MMMM", { locale: ru })}
-                    </p>
-                  </div>
+              {/* Right: Slots */}
+              <div className="p-6 flex flex-col gap-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-base font-medium">
+                    {format(selectedDate, "EEEE, d MMMM", { locale: ru }).replace(/^./, str => str.toUpperCase())}
+                  </h3>
                 </div>
-                {availableSlots.length > 0 ? (
-                  <div className="flex flex-col gap-2">
-                    {availableSlots.map((slot) => (
+                <div className="flex flex-col gap-2 overflow-y-auto max-h-[400px] scrollbar-hide">
+                  {slotsPending ? (
+                    <div className="flex flex-col items-center justify-center py-8 gap-2 text-muted-foreground text-sm">
+                      <Loader2 className="size-5 animate-spin" />
+                      <span>Загрузка слотов...</span>
+                    </div>
+                  ) : availableSlots.length > 0 ? (
+                    availableSlots.map((slot) => (
                       <Button
                         key={slot.id}
                         variant="outline"
-                        className="justify-start w-full h-11"
+                        className="justify-start w-full h-11 gap-2 rounded-lg border bg-background hover:bg-muted"
                         onClick={() => handleSlotSelect(slot.id)}
                       >
-                        {format(new Date(slot.startTime), "HH:mm")}
+                        <Circle className="size-2 fill-green-500 text-green-500" />
+                        <span className="text-sm font-medium">
+                          {format(new Date(slot.startTime), "HH:mm")}
+                        </span>
                       </Button>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    Нет доступных слотов на выбранную дату
-                  </div>
-                )}
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground text-sm">
+                      Нет доступных слотов
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
+          ) : (
+            /* Form replaces center + right */
+            <div className="md:col-span-2 p-6 flex flex-col gap-4">
+              <div className="flex items-center gap-2">
                 <Button
                   variant="ghost"
+                  size="icon"
                   onClick={handleBack}
-                  className="self-start"
+                  className="size-8"
                 >
-                  <ArrowLeft className="size-4 mr-2" />
-                  Назад
+                  <ArrowLeft className="size-4" />
                 </Button>
-              </div>
-            )}
-
-            {/* Step 3: Form */}
-            {step === "form" && (
-              <div className="flex flex-col gap-4">
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={handleBack}
-                    className="size-8"
-                  >
-                    <ArrowLeft className="size-4" />
-                  </Button>
-                  <div>
-                    <h2 className="text-lg font-medium text-foreground">
-                      Оформление бронирования
-                    </h2>
-                    <p className="text-sm text-muted-foreground">
-                      {selectedSlot
-                        ? `${format(selectedDate, "EEEE, d MMMM", { locale: ru })} в ${format(
-                            new Date(selectedSlot.startTime),
-                            "HH:mm"
-                          )}`
-                        : ""}
-                    </p>
-                  </div>
+                <div>
+                  <h2 className="text-lg font-medium text-foreground">
+                    Оформление бронирования
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedSlot
+                      ? `${format(selectedDate, "EEEE, d MMMM", { locale: ru })} в ${format(
+                          new Date(selectedSlot.startTime),
+                          "HH:mm"
+                        )}`
+                      : ""}
+                  </p>
                 </div>
-                <form
-                  onSubmit={handleSubmit(onSubmit)}
-                  className="flex flex-col gap-4"
-                >
-                  <div className="space-y-2">
-                    <Label htmlFor="guestName">Имя</Label>
-                    <Input id="guestName" {...register("guestName")} />
-                    {errors.guestName && (
-                      <p className="text-sm text-destructive">
-                        {errors.guestName.message}
-                      </p>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="guestEmail">Email</Label>
-                    <Input
-                      id="guestEmail"
-                      type="email"
-                      {...register("guestEmail")}
-                    />
-                    {errors.guestEmail && (
-                      <p className="text-sm text-destructive">
-                        {errors.guestEmail.message}
-                      </p>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="notes">Заметки</Label>
-                    <Input id="notes" {...register("notes")} />
-                  </div>
-                  <Button type="submit" className="w-full">
-                    Забронировать
-                  </Button>
-                </form>
               </div>
-            )}
-          </div>
+              <form
+                onSubmit={handleSubmit(onSubmit)}
+                className="flex flex-col gap-4 max-w-md"
+              >
+                <div className="space-y-2">
+                  <Label htmlFor="guestName">Имя</Label>
+                  <Input id="guestName" {...register("guestName")} />
+                  {errors.guestName && (
+                    <p className="text-sm text-destructive">
+                      {errors.guestName.message}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="guestEmail">Email</Label>
+                  <Input
+                    id="guestEmail"
+                    type="email"
+                    {...register("guestEmail")}
+                  />
+                  {errors.guestEmail && (
+                    <p className="text-sm text-destructive">
+                      {errors.guestEmail.message}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="notes">Заметки</Label>
+                  <Input id="notes" {...register("notes")} />
+                </div>
+                <Button type="submit" className="w-full">
+                  Забронировать
+                </Button>
+              </form>
+            </div>
+          )}
         </div>
       </div>
     </div>
