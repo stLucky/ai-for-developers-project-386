@@ -120,6 +120,17 @@ export function useCancelBooking() {
   });
 }
 
+export function usePublicOwner() {
+  return useQuery({
+    queryKey: ["publicOwner"],
+    queryFn: async () => {
+      const { data, error } = await api.GET("/public/owner");
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
 export function usePublicEventTypes() {
   return useQuery({
     queryKey: ["publicEventTypes"],
