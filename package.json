@@ -7,7 +7,11 @@
     "frontend:install": "cd frontend && npm install",
     "frontend:dev": "cd frontend && npm run dev",
     "frontend:build": "cd frontend && npm run build",
-    "api:generate": "cd frontend && npx openapi-typescript ../tsp-output/@typespec/openapi3/openapi.yaml -o ./src/api/generated.ts"
+    "api:generate": "cd frontend && npx openapi-typescript ../tsp-output/@typespec/openapi3/openapi.yaml -o ./src/api/generated.ts",
+    "backend:install": "cd backend && npm install",
+    "backend:dev": "cd backend && npm run dev",
+    "backend:build": "cd backend && npm run build",
+    "backend:start": "cd backend && npm run start"
   },
   "dependencies": {
     "@typespec/compiler": "latest",
