@@ -1,10 +1,21 @@
+import { useState } from "react";
 import { useOwner } from "@/api/hooks";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { User, Settings, Calendar, List, ArrowRight } from "lucide-react";
 
+function getInitials(name: string): string {
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+}
+
 export function AdminDashboard() {
   const { data: owner, isLoading } = useOwner();
+  const [avatarError, setAvatarError] = useState(false);
 
   if (isLoading) return (
     <div className="flex items-center justify-center py-12">
@@ -33,7 +44,20 @@ export function AdminDashboard() {
           </CardHeader>
           <CardContent className="space-y-3 pt-2">
             <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-              <User className="size-4 text-muted-foreground" />
+              <div className="relative size-4 rounded-full overflow-hidden bg-secondary flex items-center justify-center shrink-0 border">
+                {owner?.avatar && !avatarError ? (
+                  <img
+                    src={owner.avatar}
+                    alt={owner.name}
+                    className="size-full object-cover"
+                    onError={() => setAvatarError(true)}
+                  />
+                ) : (
+                  <span className="text-[8px] font-medium text-muted-foreground">
+                    {getInitials(owner?.name || "")}
+                  </span>
+                )}
+              </div>
               <div>
                 <div className="text-xs text-muted-foreground">Имя</div>
                 <div className="font-medium">{owner?.name}</div>

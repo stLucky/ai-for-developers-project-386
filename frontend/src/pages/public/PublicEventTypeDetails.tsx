@@ -92,8 +92,17 @@ export function PublicEventTypeDetails() {
       });
       toast.success("Бронирование успешно!");
       navigate(`/public/bookings/${result.id}`);
-    } catch {
-      toast.error("Ошибка при бронировании. Возможно, слот уже занят.");
+    } catch (err) {
+      const status = (err as { status?: number })?.status;
+      if (status === 409) {
+        toast.error("Слот уже занят. Выберите другой.");
+        setStep("slots");
+        setSelectedSlotId(null);
+      } else if (status === 422) {
+        toast.error("Некорректный слот. Выберите другой.");
+      } else {
+        toast.error("Ошибка при бронировании. Попробуйте позже.");
+      }
     }
   };
 

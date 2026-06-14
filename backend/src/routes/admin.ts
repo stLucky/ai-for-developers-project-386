@@ -109,4 +109,25 @@ router.post("/bookings/:id/cancel", (req: Request, res: Response) => {
   res.json(updated);
 });
 
+router.post("/bookings/:id/restore", (req: Request, res: Response) => {
+  const booking = store.bookings.get(req.params.id);
+  if (!booking) {
+    return res.status(404).json({ code: "NOT_FOUND", message: "Booking not found" });
+  }
+  // If already confirmed, return idempotently
+  if (booking.status === "confirmed") {
+    return res.json(booking);
+  }
+  // Check if slot is already booked by another confirmed booking
+  const existing = Array.from(store.bookings.values()).find(
+    (b) => b.slotId === booking.slotId && b.status === "confirmed" && b.id !== booking.id
+  );
+  if (existing) {
+    return res.status(409).json({ code: "CONFLICT", message: "Slot is already booked" });
+  }
+  const updated = { ...booking, status: "confirmed" as const };
+  store.bookings.set(updated.id, updated);
+  res.json(updated);
+});
+
 export default router;

@@ -125,8 +125,10 @@ export function useBooking(id: string) {
 export function useCreateBooking() {
   return useMutation({
     mutationFn: async (body: { slotId: string; guestName: string; guestEmail: string; notes?: string }) => {
-      const { data, error } = await api.POST("/public/bookings", { body });
-      if (error) throw error;
+      const { data, error, response } = await api.POST("/public/bookings", { body });
+      if (error) {
+        throw { error, status: response.status };
+      }
       return data;
     },
   });
@@ -136,12 +138,32 @@ export function useCancelBooking() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { data, error } = await api.POST("/admin/bookings/{id}/cancel", { params: { path: { id } } });
-      if (error) throw error;
+      const { data, error, response } = await api.POST("/admin/bookings/{id}/cancel", { params: { path: { id } } });
+      if (error) {
+        throw { error, status: response.status };
+      }
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (_data, id) => {
       queryClient.invalidateQueries({ queryKey: ["bookings"] });
+      queryClient.invalidateQueries({ queryKey: ["booking", id] });
+    },
+  });
+}
+
+export function useRestoreBooking() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { data, error, response } = await api.POST("/admin/bookings/{id}/restore", { params: { path: { id } } });
+      if (error) {
+        throw { error, status: response.status };
+      }
+      return data;
+    },
+    onSuccess: (_data, id) => {
+      queryClient.invalidateQueries({ queryKey: ["bookings"] });
+      queryClient.invalidateQueries({ queryKey: ["booking", id] });
     },
   });
 }

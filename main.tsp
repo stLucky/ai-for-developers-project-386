@@ -425,6 +425,11 @@ interface Admin {
   @post
   @route("/bookings/{id}/cancel")
   cancelBooking(@path id: string): Booking | NotFoundError;
+
+  /** Восстановить бронирование */
+  @post
+  @route("/bookings/{id}/restore")
+  restoreBooking(@path id: string): Booking | NotFoundError | ConflictError;
 }
 
 // ============================================

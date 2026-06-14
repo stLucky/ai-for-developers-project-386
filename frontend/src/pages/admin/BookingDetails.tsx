@@ -1,4 +1,4 @@
-import { useBooking, useCancelBooking, useSlot, useEventType } from "@/api/hooks";
+import { useBooking, useCancelBooking, useRestoreBooking, useSlot, useEventType } from "@/api/hooks";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useParams } from "react-router-dom";
@@ -14,6 +14,7 @@ export function BookingDetails() {
   const { data: slot } = useSlot(booking?.slotId || "");
   const { data: eventType } = useEventType(slot?.eventTypeId || "");
   const cancelBooking = useCancelBooking();
+  const restoreBooking = useRestoreBooking();
 
   const handleCancel = async () => {
     if (!id) return;
@@ -22,6 +23,21 @@ export function BookingDetails() {
       toast.success("Бронирование отменено");
     } catch {
       toast.error("Ошибка при отмене");
+    }
+  };
+
+  const handleRestore = async () => {
+    if (!id) return;
+    try {
+      await restoreBooking.mutateAsync(id);
+      toast.success("Бронирование восстановлено");
+    } catch (error: unknown) {
+      const e = error as { status?: number };
+      if (e.status === 409) {
+        toast.error("Слот уже занят другим бронированием");
+      } else {
+        toast.error("Ошибка при восстановлении");
+      }
     }
   };
 
@@ -127,14 +143,19 @@ export function BookingDetails() {
         </Card>
       </div>
 
-      {booking.status === "confirmed" && (
-        <div className="flex justify-end">
+      <div className="flex justify-end">
+        {booking.status === "confirmed" ? (
           <Button variant="destructive" onClick={handleCancel} className="neumorphic-sm gap-2">
             <XCircle className="size-4" />
             Отменить бронирование
           </Button>
-        </div>
-      )}
+        ) : (
+          <Button variant="default" onClick={handleRestore} className="neumorphic-sm gap-2">
+            <CheckCircle2 className="size-4" />
+            Восстановить бронирование
+          </Button>
+        )}
+      </div>
     </div>
   );
 }
