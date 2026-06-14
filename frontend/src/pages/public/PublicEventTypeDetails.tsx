@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { useState } from "react";
 import { format, addDays, startOfDay, endOfDay, startOfToday } from "date-fns";
 import { ru } from "date-fns/locale";
@@ -11,7 +11,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Clock, ArrowLeft, Circle, Loader2, User, Mail, FileText, CalendarDays } from "lucide-react";
+import { Clock, ArrowLeft, Circle, Loader2, User, Mail, FileText, CalendarDays, AlertCircle } from "lucide-react";
 
 const schema = z.object({
   guestName: z.string().min(1, "Обязательное поле"),
@@ -34,7 +34,7 @@ function getInitials(name: string): string {
 export function PublicEventTypeDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { data: eventType } = usePublicEventType(id || "");
+  const { data: eventType, isError: isEventTypeError } = usePublicEventType(id || "");
   const { data: owner } = usePublicOwner();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
@@ -98,6 +98,24 @@ export function PublicEventTypeDetails() {
   };
 
   const availableSlots = slots?.filter((s) => s.isAvailable) || [];
+
+  if (isEventTypeError) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 text-center animate-fade-in-up">
+        <AlertCircle className="size-12 text-muted-foreground/40 mb-4" />
+        <h3 className="text-lg font-medium text-foreground mb-2">Событие не найдено</h3>
+        <p className="text-muted-foreground max-w-xs mb-6">
+          Запрашиваемый тип события не существует или был удален
+        </p>
+        <Button variant="outline" asChild className="neumorphic-sm gap-2">
+          <Link to="/public">
+            <ArrowLeft className="size-4" />
+            Назад к списку встреч
+          </Link>
+        </Button>
+      </div>
+    );
+  }
 
   if (!eventType || !owner)
     return (
