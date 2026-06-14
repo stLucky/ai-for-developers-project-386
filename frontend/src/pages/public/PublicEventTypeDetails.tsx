@@ -3,9 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { DatePicker } from "@/components/ui/datepicker";
 import { useParams, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { format, addDays, startOfDay, endOfDay } from "date-fns";
+import { format, addDays, startOfDay, endOfDay, startOfToday } from "date-fns";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -53,7 +54,6 @@ export function PublicEventTypeDetails() {
   };
 
   const availableSlots = slots?.filter((s) => s.isAvailable) || [];
-  const dates = Array.from({ length: 14 }, (_, i) => addDays(new Date(), i));
 
   if (!eventType) return <div>Загрузка...</div>;
 
@@ -68,22 +68,12 @@ export function PublicEventTypeDetails() {
           <CardTitle>Выберите дату</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-2 overflow-x-auto pb-2">
-            {dates.map((date) => (
-              <Button
-                key={date.toISOString()}
-                variant={selectedDate.toDateString() === date.toDateString() ? "default" : "outline"}
-                onClick={() => setSelectedDate(date)}
-                className="min-w-[100px]"
-              >
-                <div className="text-center">
-                  <div className="text-xs">{format(date, "EEE")}</div>
-                  <div className="text-lg font-bold">{format(date, "d")}</div>
-                  <div className="text-xs">{format(date, "MMM")}</div>
-                </div>
-              </Button>
-            ))}
-          </div>
+          <DatePicker
+            date={selectedDate}
+            onDateChange={(date) => date && setSelectedDate(date)}
+            fromDate={startOfToday()}
+            toDate={addDays(startOfToday(), 13)}
+          />
         </CardContent>
       </Card>
 
