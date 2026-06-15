@@ -247,6 +247,7 @@ export function PublicEventTypeDetails() {
                       <Button
                         key={slot.id}
                         variant="outline"
+                        data-slot-id={slot.id}
                         className="justify-start w-full h-11 gap-2 rounded-lg border bg-background hover:bg-muted"
                         onClick={() => handleSlotSelect(slot.id)}
                       >
@@ -292,6 +293,7 @@ export function PublicEventTypeDetails() {
                 </div>
               </div>
               <form
+                noValidate
                 onSubmit={handleSubmit(onSubmit)}
                 className="flex flex-col gap-4 max-w-md"
               >
