@@ -40,7 +40,7 @@ if (process.env.NODE_ENV === "test") {
       slotId,
       guestName,
       guestEmail,
-      notes: notes || null,
+      notes: notes || undefined,
       status: status as "confirmed" | "cancelled",
       createdAt: createdAt || new Date().toISOString(),
     };
