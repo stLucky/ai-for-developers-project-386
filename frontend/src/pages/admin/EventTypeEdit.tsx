@@ -22,7 +22,7 @@ type FormData = z.infer<typeof schema>;
 
 export function EventTypeEdit() {
   const { id } = useParams<{ id: string }>();
-  const { data: eventTypes } = useEventTypes();
+  const { data: eventTypes, isLoading: isLoadingList } = useEventTypes();
   const updateEventType = useUpdateEventType();
   const navigate = useNavigate();
   const eventType = eventTypes?.find((et) => et.id === id);
@@ -52,7 +52,15 @@ export function EventTypeEdit() {
     }
   };
 
-  if (!eventType) return (
+  if (!isLoadingList && !eventType) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-muted-foreground">Тип события не найден</div>
+      </div>
+    );
+  }
+
+  if (isLoadingList || !eventType) return (
     <div className="flex items-center justify-center py-12">
       <div className="animate-pulse text-muted-foreground">Загрузка...</div>
     </div>
