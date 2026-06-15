@@ -60,6 +60,32 @@ export async function seedBooking(
   };
 }
 
+export async function seedTestBooking(
+  request: any,
+  body: {
+    id?: string;
+    slotId: string;
+    guestName: string;
+    guestEmail: string;
+    status: "confirmed" | "cancelled";
+    notes?: string;
+    createdAt?: string;
+  }
+) {
+  const response = await request.post(`${BACKEND_URL}/__test/bookings`, {
+    data: body,
+  });
+  expect(response.ok()).toBeTruthy();
+  const booking = await response.json();
+
+  return {
+    booking,
+    cleanup: async () => {
+      // bookings не удаляются напрямую через API
+    },
+  };
+}
+
 export async function getSlots(
   request: any,
   eventTypeId: string,

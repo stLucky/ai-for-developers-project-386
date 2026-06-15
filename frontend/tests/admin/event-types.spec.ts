@@ -1,4 +1,5 @@
-import { test, expect, resetStore, seedEventType } from '../fixtures';
+import { test, expect, resetStore, seedEventType, seedBooking, getSlots, seedTestBooking } from '../fixtures';
+import { format, startOfDay, endOfDay } from 'date-fns';
 
 test.describe('SC-A: Админский поток — Happy Path', () => {
   test.describe.configure({ mode: 'serial' });
@@ -37,5 +38,51 @@ test.describe('SC-A: Админский поток — Happy Path', () => {
 
     await expect(page).toHaveURL(/\/admin\/event-types/);
     await expect(page.getByText('Обновленная консультация')).toBeVisible();
+  });
+});
+
+test.describe('SC-A: Админский поток — Edge Cases', () => {
+  test.describe.configure({ mode: 'serial' });
+
+  test.beforeEach(async ({ request }) => {
+    await resetStore(request);
+  });
+
+  test('SC-A-07: Удаление типа события, на который есть бронирования', async ({ page, request }) => {
+    const { eventType } = await seedEventType(request, {
+      name: 'Консультация 30 мин',
+      durationMinutes: 30,
+    });
+
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const from = format(startOfDay(tomorrow), "yyyy-MM-dd'T'00:00:00'Z'");
+    const to = format(endOfDay(tomorrow), "yyyy-MM-dd'T'23:59:59'Z'");
+
+    const slots = await getSlots(request, eventType.id, from, to);
+    const firstSlot = slots[0];
+
+    const { booking } = await seedBooking(request, {
+      slotId: firstSlot.id,
+      guestName: 'Иван Петров',
+      guestEmail: 'ivan@example.com',
+    });
+
+    await page.goto('/admin/event-types');
+    await expect(page.getByText('Консультация 30 мин')).toBeVisible();
+
+    await page.getByRole('button', { name: 'Удалить' }).click();
+
+    await expect(page.getByText('Тип события удален')).toBeVisible();
+    await expect(page.getByText('Консультация 30 мин')).not.toBeVisible();
+
+    await page.goto('/admin/bookings');
+    await expect(page.getByText('Иван Петров')).toBeVisible();
+    await expect(page.getByText('ivan@example.com')).toBeVisible();
+  });
+
+  test('SC-A-09: Доступ к несуществующему типу события (404)', async ({ page }) => {
+    await page.goto('/admin/event-types/non-existent-id/edit');
+    await expect(page.getByText('Тип события не найден')).toBeVisible();
   });
 });

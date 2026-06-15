@@ -1,4 +1,4 @@
-import { test, expect, resetStore, seedEventType, seedBooking, getSlots, cancelBooking } from '../fixtures';
+import { test, expect, resetStore, seedEventType, seedBooking, getSlots, cancelBooking, seedTestBooking } from '../fixtures';
 import { format, startOfDay, endOfDay } from 'date-fns';
 
 test.describe('SC-A: Админский поток — Happy Path', () => {
@@ -103,5 +103,50 @@ test.describe('SC-A: Админский поток — Happy Path', () => {
 
     await expect(page.getByText('Подтверждено').first()).toBeVisible();
     await expect(page.getByRole('button', { name: 'Отменить бронирование' })).toBeVisible();
+  });
+});
+
+test.describe('SC-A: Админский поток — Edge Cases', () => {
+  test.describe.configure({ mode: 'serial' });
+
+  test.beforeEach(async ({ request }) => {
+    await resetStore(request);
+  });
+
+  test('SC-A-08: Восстановление бронирования, когда слот уже занят другим (409 Conflict)', async ({ page, request }) => {
+    const { eventType } = await seedEventType(request, {
+      name: 'Консультация 30 мин',
+      durationMinutes: 30,
+    });
+
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const from = format(startOfDay(tomorrow), "yyyy-MM-dd'T'00:00:00'Z'");
+    const to = format(endOfDay(tomorrow), "yyyy-MM-dd'T'23:59:59'Z'");
+
+    const slots = await getSlots(request, eventType.id, from, to);
+    const firstSlot = slots[0];
+
+    const { booking: bookingA } = await seedBooking(request, {
+      slotId: firstSlot.id,
+      guestName: 'Первый Гость',
+      guestEmail: 'first@example.com',
+    });
+
+    const { booking: bookingB } = await seedTestBooking(request, {
+      slotId: firstSlot.id,
+      guestName: 'Второй Гость',
+      guestEmail: 'second@example.com',
+      status: 'cancelled',
+    });
+
+    await page.goto(`/admin/bookings/${bookingB.id}`);
+    await expect(page.getByText('Детали бронирования').first()).toBeVisible();
+    await expect(page.getByText('Отменено').first()).toBeVisible();
+
+    await page.getByRole('button', { name: 'Восстановить бронирование' }).click();
+
+    await expect(page.getByText('Слот уже занят другим бронированием')).toBeVisible();
+    await expect(page.getByText('Отменено').first()).toBeVisible();
   });
 });

@@ -24,6 +24,29 @@ if (process.env.NODE_ENV === "test") {
     seed();
     res.json({ message: "Store reset" });
   });
+
+  app.post("/__test/bookings", (req, res) => {
+    const { id, slotId, guestName, guestEmail, status, notes, createdAt } = req.body as {
+      id?: string;
+      slotId: string;
+      guestName: string;
+      guestEmail: string;
+      status: string;
+      notes?: string;
+      createdAt?: string;
+    };
+    const booking = {
+      id: id || require("uuid").v4(),
+      slotId,
+      guestName,
+      guestEmail,
+      notes: notes || null,
+      status: status as "confirmed" | "cancelled",
+      createdAt: createdAt || new Date().toISOString(),
+    };
+    store.bookings.set(booking.id, booking);
+    res.status(201).json(booking);
+  });
 }
 
 app.use(errorHandler);
