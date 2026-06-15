@@ -1,5 +1,5 @@
 {
-  "name": "call-booking-api-spec",
+  "name": "call-booking",
   "version": "1.0.0",
   "description": "TypeSpec specification for Call Booking service",
   "scripts": {
