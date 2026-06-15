@@ -23,7 +23,7 @@ test.describe('SC-A: Админский поток — Happy Path', () => {
     const firstSlot = slots[0];
     const secondSlot = slots[1];
 
-    const { booking: confirmedBooking } = await seedBooking(request, {
+    await seedBooking(request, {
       slotId: firstSlot.id,
       guestName: 'Иван Петров',
       guestEmail: 'ivan@example.com',
@@ -127,7 +127,7 @@ test.describe('SC-A: Админский поток — Edge Cases', () => {
     const slots = await getSlots(request, eventType.id, from, to);
     const firstSlot = slots[0];
 
-    const { booking: bookingA } = await seedBooking(request, {
+    await seedBooking(request, {
       slotId: firstSlot.id,
       guestName: 'Первый Гость',
       guestEmail: 'first@example.com',

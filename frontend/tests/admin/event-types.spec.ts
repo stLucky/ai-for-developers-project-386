@@ -1,4 +1,4 @@
-import { test, expect, resetStore, seedEventType, seedBooking, getSlots, seedTestBooking } from '../fixtures';
+import { test, expect, resetStore, seedEventType, seedBooking, getSlots } from '../fixtures';
 import { format, startOfDay, endOfDay } from 'date-fns';
 
 test.describe('SC-A: Админский поток — Happy Path', () => {
@@ -62,7 +62,7 @@ test.describe('SC-A: Админский поток — Edge Cases', () => {
     const slots = await getSlots(request, eventType.id, from, to);
     const firstSlot = slots[0];
 
-    const { booking } = await seedBooking(request, {
+    await seedBooking(request, {
       slotId: firstSlot.id,
       guestName: 'Иван Петров',
       guestEmail: 'ivan@example.com',
