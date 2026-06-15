@@ -32,3 +32,7 @@ npx tsp compile . --emit=@typespec/openapi3
 
 - Онлайн: [Swagger Editor](https://editor.swagger.io) — импортировать `openapi.yaml`
 - Локально: `npx @redocly/cli build-docs tsp-output/@typespec/openapi3/openapi.yaml -o docs.html`
+
+### Тестирование
+
+Тестовое изменение для проверки работы release-please.
