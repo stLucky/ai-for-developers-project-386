@@ -125,11 +125,6 @@ test.describe('SC-G: Гостевой поток — Edge Cases', () => {
       durationMinutes: 30,
     });
 
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const from = format(startOfDay(tomorrow), "yyyy-MM-dd'T'00:00:00'Z'");
-    const to = format(endOfDay(tomorrow), "yyyy-MM-dd'T'23:59:59'Z'");
-
     await page.goto(`/public/event-types/${eventType.id}`);
     await selectTomorrow(page);
 
@@ -190,7 +185,7 @@ test.describe('SC-G: Гостевой поток — Edge Cases', () => {
     await expect(page.getByText('Бронирование не найдено')).toBeVisible();
   });
 
-  test('SC-G-08: Пустой список типов событий', async ({ page, request }) => {
+  test('SC-G-08: Пустой список типов событий', async ({ page }) => {
     // store уже очищен в beforeEach
     await page.goto('/public');
     await expect(page.getByText('Нет доступных встреч')).toBeVisible();

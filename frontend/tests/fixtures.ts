@@ -1,4 +1,4 @@
-import { test as base, expect, Page } from '@playwright/test';
+import { test as base, expect, Page, APIRequestContext } from '@playwright/test';
 
 export const test = base.extend({});
 
@@ -19,13 +19,13 @@ export async function selectTomorrow(page: Page) {
 
 const BACKEND_URL = 'http://localhost:3000';
 
-export async function resetStore(request: any) {
+export async function resetStore(request: APIRequestContext) {
   const response = await request.post(`${BACKEND_URL}/__test/reset`);
   expect(response.ok()).toBeTruthy();
 }
 
 export async function seedEventType(
-  request: any,
+  request: APIRequestContext,
   body: { name: string; description?: string; durationMinutes: number }
 ) {
   const response = await request.post(`${BACKEND_URL}/admin/event-types`, {
@@ -43,7 +43,7 @@ export async function seedEventType(
 }
 
 export async function seedBooking(
-  request: any,
+  request: APIRequestContext,
   body: { slotId: string; guestName: string; guestEmail: string; notes?: string }
 ) {
   const response = await request.post(`${BACKEND_URL}/public/bookings`, {
@@ -61,7 +61,7 @@ export async function seedBooking(
 }
 
 export async function seedTestBooking(
-  request: any,
+  request: APIRequestContext,
   body: {
     id?: string;
     slotId: string;
@@ -87,7 +87,7 @@ export async function seedTestBooking(
 }
 
 export async function getSlots(
-  request: any,
+  request: APIRequestContext,
   eventTypeId: string,
   from?: string,
   to?: string
@@ -101,13 +101,13 @@ export async function getSlots(
   return response.json();
 }
 
-export async function cancelBooking(request: any, id: string) {
+export async function cancelBooking(request: APIRequestContext, id: string) {
   const response = await request.post(`${BACKEND_URL}/admin/bookings/${id}/cancel`);
   expect(response.ok()).toBeTruthy();
   return response.json();
 }
 
-export async function restoreBooking(request: any, id: string) {
+export async function restoreBooking(request: APIRequestContext, id: string) {
   const response = await request.post(`${BACKEND_URL}/admin/bookings/${id}/restore`);
   expect(response.ok()).toBeTruthy();
   return response.json();
