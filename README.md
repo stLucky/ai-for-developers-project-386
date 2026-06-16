@@ -53,9 +53,7 @@ docker run -p 3000:3000 -e PORT=3000 call-booking
 
 Приложение развёрнуто на Render:
 
-https://call-booking-app.onrender.com
-
-> Замените ссылку выше на реальную ссылку после деплоя.
+https://ai-for-developers-project-386-1-sleq.onrender.com
 
 ## Запуск в production
 

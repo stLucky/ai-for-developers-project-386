@@ -24,7 +24,7 @@ export default defineConfig({
     {
       // Backend
       command: 'cd .. && NODE_ENV=test npm run backend:dev',
-      url: 'http://localhost:3000/admin/owner',
+      url: 'http://localhost:3000/api/admin/owner',
       reuseExistingServer: !process.env.CI,
       timeout: 120000,
     },

@@ -17,7 +17,7 @@ export async function selectTomorrow(page: Page) {
   await page.getByRole('gridcell', { name: new RegExp(tomorrowDay + ' ') }).getByRole('button').first().click();
 }
 
-const BACKEND_URL = 'http://localhost:3000';
+const BACKEND_URL = 'http://localhost:3000/api';
 
 export async function resetStore(request: APIRequestContext) {
   const response = await request.post(`${BACKEND_URL}/__test/reset`);
