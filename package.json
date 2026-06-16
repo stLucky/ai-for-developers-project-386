@@ -20,6 +20,9 @@
     "@typespec/rest": "latest",
     "@typespec/openapi3": "latest"
   },
+  "engines": {
+    "node": ">=22"
+  },
   "devDependencies": {
     "@stoplight/prism-cli": "latest"
   }

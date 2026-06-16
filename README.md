@@ -32,3 +32,34 @@ npx tsp compile . --emit=@typespec/openapi3
 
 - Онлайн: [Swagger Editor](https://editor.swagger.io) — импортировать `openapi.yaml`
 - Локально: `npx @redocly/cli build-docs tsp-output/@typespec/openapi3/openapi.yaml -o docs.html`
+
+## Docker
+
+Соберите образ:
+
+```bash
+docker build -t call-booking .
+```
+
+Запустите контейнер:
+
+```bash
+docker run -p 3000:3000 -e PORT=3000 call-booking
+```
+
+Приложение будет доступно по адресу `http://localhost:3000`.
+
+## Деплой
+
+Приложение развёрнуто на Render:
+
+https://call-booking-app.onrender.com
+
+> Замените ссылку выше на реальную ссылку после деплоя.
+
+## Запуск в production
+
+Приложение запускается в едином контейнере:
+- Frontend (React + Vite) собирается в статику
+- Backend (Express) раздаёт API по `/api/*` и статику по `/`
+- Порт задаётся переменной окружения `PORT`
