@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.1.0](https://github.com/stLucky/ai-for-developers-project-386/compare/v1.0.0...v1.1.0) (2026-06-16)
+
+
+### Features
+
+* add Docker support and production deployment ([548a4d3](https://github.com/stLucky/ai-for-developers-project-386/commit/548a4d3d42222a1f149c2511a94e04fc49f0d76c))
+
+
+### Bug Fixes
+
+* test release-please patch bump ([cb27dc7](https://github.com/stLucky/ai-for-developers-project-386/commit/cb27dc74892222bbbf85d7d00bf721eeefc49242))
+* update API proxy, test fixtures, and deployment URL ([a9675cc](https://github.com/stLucky/ai-for-developers-project-386/commit/a9675cc58a4d5ea9661e48d53690291eaa476519))
+
 ## 1.0.0 (2026-06-15)
 
 
